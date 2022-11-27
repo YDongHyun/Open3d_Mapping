@@ -5,8 +5,10 @@ from sensor_msgs.msg import PointCloud2, PointField
 from std_msgs.msg import Header
 from PIL import Image 
 import cv2
+import struct
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
 import open3d as o3d
 
 def Pcl_pub():
@@ -33,17 +35,22 @@ def Pcl_pub():
 
    for i in range(len(color)):
       if ((color[i]>=color1[0]) & (color[i]<=color1[1])).min():
-         xyz_1.append(xyz[i])
+         r, g, b = int(color[i][0]*255), int(color[i][1]*255), int(color[i][2]*255)
+         rgb = struct.unpack('I', struct.pack('BBBB', b, g, r, 255))[0]
+         xyz_1.append([xyz[i][0],xyz[i][1],xyz[i][2],rgb])
+
          color_1.append(color[i])
       elif ((color[i]>=color2[0]) & (color[i]<=color2[1])).min():
-         xyz_1.append(xyz[i])
-         color_1.append(color[i])
-      elif ((color[i]>=color3[0]) & (color[i]<=color3[1])).min():
-         xyz_1.append(xyz[i])
-         color_1.append(color[i])
+         r, g, b = int(color[i][0]*255), int(color[i][1]*255), int(color[i][2]*255)
+         rgb = struct.unpack('I', struct.pack('BBBB', b, g, r, 255))[0]
+         xyz_1.append([xyz[i][0],xyz[i][1],xyz[i][2],rgb])
 
-   points=[]
-   ret=np.array(xyz_1,dtype=np.float32)
+      elif ((color[i]>=color3[0]) & (color[i]<=color3[1])).min():
+         r, g, b = int(color[i][0]*255), int(color[i][1]*255), int(color[i][2]*255)
+         rgb = struct.unpack('I', struct.pack('BBBB', b, g, r, 255))[0]
+         xyz_1.append([xyz[i][0],xyz[i][1],xyz[i][2],rgb])
+
+   #rgba = struct.unpack('I', struct.pack('BBBB', int(color_1[100][2]*255), int(color_1[100][1]*255), int(color_1[100][0]*255), 255))[0]
    header = Header()
    header.frame_id = "map"
    header.stamp = rospy.Time.now()
@@ -51,12 +58,11 @@ def Pcl_pub():
       PointField('y', 4, PointField.FLOAT32, 1),
       PointField('z', 8, PointField.FLOAT32, 1),
       #PointField('rgb', 12, PointField.UINT32, 1),
-      #PointField('rgba', 12, PointField.UINT32, 1),
+      PointField('rgba', 12, PointField.UINT32, 1),
       ]
-   print(xyz[0])
+   print(xyz_1[0])
    points=xyz_1
    pc2 = point_cloud2.create_cloud(header, fields, points)
-
    pcl_pub.publish(pc2)
 
    print("sub")
