@@ -3,9 +3,7 @@ import open3d as o3d
 import numpy as np
 import time
 
-
 def quaternion_rotation_matrix(Q):
-
    # Extract the values from Q
    q0 = Q[0]
    q1 = Q[1]
@@ -68,7 +66,9 @@ def img_to_pcl():
       elif ((color[i]>=color2[0]) & (color[i]<=color2[1])).min():
          r, g, b = int(color[i][0]*255), int(color[i][1]*255), int(color[i][2]*255)
          rgb = struct.unpack('I', struct.pack('BBBB', b, g, r, 255))[0]
-         transpose=np.array([[1,0,0,0],[0,0,1,0],[0,1,0,0],[0,0,0,1]])
+         transpose=np.array([[qu[0][0],qu[0][1],qu[0][2],pose[0]],
+               [qu[1][0],qu[1][1], qu[1][2],pose[1]],
+               [qu[2][0], qu[2][1],qu[2][2],pose[2]],[0,0,0,1]])
          before_point=np.array([[xyz[i][0]],[xyz[i][1]],[xyz[i][2]],[1]])
          point=transpose@before_point
          xyz_1.append([point[0],point[1],point[2],rgb])
@@ -76,7 +76,9 @@ def img_to_pcl():
       elif ((color[i]>=color3[0]) & (color[i]<=color3[1])).min():
          r, g, b = int(color[i][0]*255), int(color[i][1]*255), int(color[i][2]*255)
          rgb = struct.unpack('I', struct.pack('BBBB', b, g, r, 255))[0]
-         transpose=np.array([[1,0,0,0],[0,0,1,0],[0,1,0,0],[0,0,0,1]])
+         transpose=np.array([[qu[0][0],qu[0][1],qu[0][2],pose[0]],
+               [qu[1][0],qu[1][1], qu[1][2],pose[1]],
+               [qu[2][0], qu[2][1],qu[2][2],pose[2]],[0,0,0,1]])
          before_point=np.array([[xyz[i][0]],[xyz[i][1]],[xyz[i][2]],[1]])
          point=transpose@before_point
          xyz_1.append([point[0],point[1],point[2],rgb])
