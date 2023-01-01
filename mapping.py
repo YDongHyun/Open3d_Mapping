@@ -29,16 +29,12 @@ def quaternion_rotation_matrix(Q):
                            [r20, r21, r22]])
    return rot_matrix
 
-def img_to_pcl():
-   Q=[-0.0104769418065,0.360041825908,-0.0145964153424,-0.932762608982]
+def img_to_pcl(color_raw,depth_raw,pose,Q):
    qu=quaternion_rotation_matrix(Q)
-   print (qu[0][1])
-   color_raw = o3d.io.read_image("image480/00020.jpg")
-   depth_raw = o3d.io.read_image("depth/00020.png")
    rgbd_image = o3d.geometry.RGBDImage.create_from_tum_format(
       color_raw, depth_raw, convert_rgb_to_intensity=False)
-
-   color1 = np.array([[0.12, 0.8, 0.8],[0.13, 0.9, 0.9]])
+   #pcd =class_extract(color_raw,depth_raw)
+   color1 = np.array([[0.19, 0.8, 0.9],[0.2, 0.9, 1.1]])
    color2 = np.array([[0., 0.5, 0.2],[0.1,0.6,0.3]])
    color3 = np.array([[0.6,0.7,0.2],[0.9,0.8,0.4]])
 
@@ -46,19 +42,23 @@ def img_to_pcl():
       rgbd_image,
       o3d.camera.PinholeCameraIntrinsic(
          o3d.camera.PinholeCameraIntrinsicParameters.PrimeSenseDefault))
+   pcd = pcd.voxel_down_sample(voxel_size=0.03)
    pcd.transform([[1, 0, 0, 0], [0, -1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]])
-   pose=[6.2694909131,-0.0270691854551, -3.11911004688]
+
    xyz_1=[]
    color= np.asarray(pcd.colors)
    xyz = np.asarray(pcd.points)
    start = time.time()
+   
+   transpose=np.array([[qu[0][0],qu[0][1],qu[0][2],pose[0]],
+               [qu[1][0],qu[1][1], qu[1][2],pose[1]],
+               [qu[2][0], qu[2][1],qu[2][2],pose[2]],[0,0,0,1]])             
+               
    for i in range(len(color)):
       if ((color[i]>=color1[0]) & (color[i]<=color1[1])).min():
          r, g, b = int(color[i][0]*255), int(color[i][1]*255), int(color[i][2]*255)
          rgb = struct.unpack('I', struct.pack('BBBB', b, g, r, 255))[0]
-         transpose=np.array([[qu[0][0],qu[0][1],qu[0][2],pose[0]],
-               [qu[1][0],qu[1][1], qu[1][2],pose[1]],
-               [qu[2][0], qu[2][1],qu[2][2],pose[2]],[0,0,0,1]])
+         
          before_point=np.array([[xyz[i][0]],[xyz[i][1]],[xyz[i][2]],[1]])
          point=transpose@before_point
          xyz_1.append([point[0],point[1],point[2],rgb])
@@ -66,9 +66,6 @@ def img_to_pcl():
       elif ((color[i]>=color2[0]) & (color[i]<=color2[1])).min():
          r, g, b = int(color[i][0]*255), int(color[i][1]*255), int(color[i][2]*255)
          rgb = struct.unpack('I', struct.pack('BBBB', b, g, r, 255))[0]
-         transpose=np.array([[qu[0][0],qu[0][1],qu[0][2],pose[0]],
-               [qu[1][0],qu[1][1], qu[1][2],pose[1]],
-               [qu[2][0], qu[2][1],qu[2][2],pose[2]],[0,0,0,1]])
          before_point=np.array([[xyz[i][0]],[xyz[i][1]],[xyz[i][2]],[1]])
          point=transpose@before_point
          xyz_1.append([point[0],point[1],point[2],rgb])
@@ -76,12 +73,10 @@ def img_to_pcl():
       elif ((color[i]>=color3[0]) & (color[i]<=color3[1])).min():
          r, g, b = int(color[i][0]*255), int(color[i][1]*255), int(color[i][2]*255)
          rgb = struct.unpack('I', struct.pack('BBBB', b, g, r, 255))[0]
-         transpose=np.array([[qu[0][0],qu[0][1],qu[0][2],pose[0]],
-               [qu[1][0],qu[1][1], qu[1][2],pose[1]],
-               [qu[2][0], qu[2][1],qu[2][2],pose[2]],[0,0,0,1]])
          before_point=np.array([[xyz[i][0]],[xyz[i][1]],[xyz[i][2]],[1]])
          point=transpose@before_point
          xyz_1.append([point[0],point[1],point[2],rgb])
+      
          
    print("time :", time.time() - start)
    return xyz_1
