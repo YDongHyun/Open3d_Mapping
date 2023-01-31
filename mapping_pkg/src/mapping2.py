@@ -2,6 +2,7 @@ import struct
 import open3d as o3d
 import numpy as np
 import time
+import matplotlib.pyplot as plt
 
 def quaternion_rotation_matrix(Q):
    # Extract the values from Q
@@ -31,24 +32,26 @@ def quaternion_rotation_matrix(Q):
 
 def img_to_pcl(color_raw,depth_raw,pose,Q):
    qu=quaternion_rotation_matrix(Q)
-   rgbd_image = o3d.geometry.RGBDImage.create_from_tum_format(
-      color_raw, depth_raw, convert_rgb_to_intensity=False)
+   #rgbd_image = o3d.geometry.RGBDImage.create_from_tum_format(
+   #   color_raw, depth_raw, convert_rgb_to_intensity=False)
       
-   #rgbd_image = o3d.geometry.RGBDImage.create_from_color_and_depth(
-    #  color_raw, depth_raw, convert_rgb_to_intensity=False)
+   rgbd_image = o3d.geometry.RGBDImage.create_from_color_and_depth(
+      color_raw, depth_raw,depth_trunc=3, depth_scale=2000.0, convert_rgb_to_intensity=False)
       
    #pcd =class_extract(color_raw,depth_raw)
-   color1 = np.array([[0.12, 0.5, 0.7],[0.13, 0.6, 0.8]])
-   #color1=np.array([[0,0,0],[0,0,0]])
-   color2 = np.array([[0.9, 0.15, 0.3],[1.0,0.2,0.4]])
-   color3 = np.array([[0.1,0.7,0.3],[0.2,0.8,0.4]])
+   color1 = np.array([[0.25, 0.8, 0.95],[0.3, 0.85, 1]])
+   #color1=np.array([[0,0,0],[1,1,1]])
+   color2 = np.array([[0.7, 0.45, 0.45],[0.8,0.5,0.5]])
+   color3 = np.array([[0.2,0.4,0.7],[0.25,0.45,0.75]])
 
    pcd = o3d.geometry.PointCloud.create_from_rgbd_image(
       rgbd_image,
       o3d.camera.PinholeCameraIntrinsic(
          o3d.camera.PinholeCameraIntrinsicParameters.PrimeSenseDefault))
-   pcd = pcd.voxel_down_sample(voxel_size=0.03)
+
+   pcd = pcd.voxel_down_sample(voxel_size=0.05)
    pcd.transform([[1, 0, 0, 0], [0, -1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]])
+
    print(pcd)
    xyz_1=[]
    color= np.asarray(pcd.colors)

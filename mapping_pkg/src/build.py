@@ -9,10 +9,10 @@ from std_msgs.msg import Header
 def Map_pub():
     pub = rospy.Publisher('/map', PointCloud2, queue_size=10)
     points = []
-    with open("/home/ydh/catkin_ws/src/mapping_pkg/src/7ho.txt", "r") as f:
+    with open("/home/ydh/catkin_ws/src/mapping_pkg/src/test.txt", "r") as f:
         lines = f.readlines()
         for i,line in enumerate(lines):
-            if (i>=104) & (i<=27279):
+            if (i>=142) & (i<=15669):
                 cc = line.split()
                 x = float(cc[0])
                 y = float(cc[1])
@@ -27,14 +27,13 @@ def Map_pub():
     fields = [PointField('x', 0, PointField.FLOAT32, 1),
             PointField('y', 4, PointField.FLOAT32, 1),
             PointField('z', 8, PointField.FLOAT32, 1),
-            PointField('rgba', 12, PointField.UINT32, 1)
+            PointField('rgba', 12, PointField.UINT32, 1),
             ]
 
     header = Header()
     header.frame_id = "map"
     header.stamp = rospy.Time.now()
 
-    print(points[0])
     pc = point_cloud2.create_cloud(header, fields, points)
     rospy.sleep(0.5)
     pub.publish(pc)
